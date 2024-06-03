@@ -6,7 +6,14 @@ import 'package:food_delivery/models/product_model.dart';
 import 'package:food_delivery/utils/app_colors.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final List<ProductModel> favoriteProducts;
+  final Function(List<ProductModel>) favoritesUpdated;
+
+  const HomePage({
+    super.key,
+    required this.favoriteProducts,
+    required this.favoritesUpdated,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -15,11 +22,24 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   String? selectedCategoryId;
   late List<ProductModel> filteredProducts;
+  late List<ProductModel> favoriteProducts;
 
   @override
   void initState() {
     super.initState();
     filteredProducts = dummyProducts;
+    favoriteProducts = widget.favoriteProducts;
+  }
+
+  void toggleFavorite(ProductModel product) {
+    setState(() {
+      if (favoriteProducts.contains(product)) {
+        favoriteProducts.remove(product);
+      } else {
+        favoriteProducts.add(product);
+      }
+      widget.favoritesUpdated(favoriteProducts);
+    });
   }
 
   @override
@@ -49,11 +69,16 @@ class _HomePageState extends State<HomePage> {
                     child: InkWell(
                       onTap: () {
                         setState(() {
-                          selectedCategoryId = category.id;
-                          filteredProducts = dummyProducts
-                              .where((product) =>
-                                  product.category.id == selectedCategoryId)
-                              .toList();
+                          if (selectedCategoryId == category.id) {
+                            selectedCategoryId = null;
+                            filteredProducts = dummyProducts;
+                          } else {
+                            selectedCategoryId = category.id;
+                            filteredProducts = dummyProducts
+                                .where((product) =>
+                                    product.category.id == selectedCategoryId)
+                                .toList();
+                          }
                         });
                       },
                       child: DecoratedBox(
@@ -107,6 +132,7 @@ class _HomePageState extends State<HomePage> {
               physics: const NeverScrollableScrollPhysics(),
               itemBuilder: (_, index) {
                 final product = filteredProducts[index];
+                final isFavorite = favoriteProducts.contains(product);
 
                 return DecoratedBox(
                   decoration: BoxDecoration(
@@ -153,13 +179,17 @@ class _HomePageState extends State<HomePage> {
                             shape: BoxShape.circle,
                           ),
                           child: InkWell(
-                            onTap: () {},
-                            child: const Padding(
-                              padding: EdgeInsets.all(4.0),
+                            onTap: () {
+                              toggleFavorite(product);
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(4.0),
                               child: Icon(
-                                Icons.favorite_border,
+                                isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
                                 size: 15,
-                                color: AppColors.primary,
+                                color: isFavorite ? Colors.red : AppColors.primary,
                               ),
                             ),
                           ),

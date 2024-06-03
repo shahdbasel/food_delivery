@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:food_delivery/utils/app_colors.dart';
 import 'package:food_delivery/views/pages/home_page.dart';
+import 'package:food_delivery/views/pages/favorites_page.dart';
+import 'package:food_delivery/views/pages/profile_page.dart';
 import 'package:food_delivery/views/widgets/app_drawer.dart';
 import 'package:food_delivery/views/widgets/custom_app_bar.dart';
+import 'package:food_delivery/models/product_model.dart';
 
 class CustomBottomNavbar extends StatefulWidget {
   const CustomBottomNavbar({super.key});
@@ -13,12 +16,23 @@ class CustomBottomNavbar extends StatefulWidget {
 
 class _CustomBottomNavbarState extends State<CustomBottomNavbar> {
   int selectedIndex = 0;
+  List<ProductModel> favoriteProducts = [];
 
-  List<Widget> bodyWidgets = [
-    const HomePage(),
-    const SizedBox(),
-    const SizedBox(),
-  ];
+  void updateFavorites(List<ProductModel> newFavorites) {
+    setState(() {
+      favoriteProducts = newFavorites;
+    });
+  }
+
+  List<Widget> get bodyWidgets => [
+        HomePage(
+          key: const ValueKey('HomePage'),
+          favoriteProducts: favoriteProducts,
+          favoritesUpdated: updateFavorites,
+        ),
+        FavoritesPage(favoriteProducts: favoriteProducts),
+        const ProfilePage(),
+      ];
 
   @override
   Widget build(BuildContext context) {
